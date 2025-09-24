@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ForecastCard } from './components/forecast-card'
 import { RecommendationsList } from './components/recommendations-list'
 import { fetchForecastData, type ForecastData } from '@/lib/api'
@@ -33,10 +32,9 @@ export function Forecast() {
   return (
     <>
       <Header fixed>
-        <Search />
         <div className='ms-auto flex items-center space-x-4'>
           <ThemeSwitch />
-          <ConfigDrawer />
+          <ProfileDropdown />
         </div>
       </Header>
 

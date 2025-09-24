@@ -1,8 +1,7 @@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 import { BudgetForm } from './components/budget-form'
 
 export function BudgetPlanning() {
@@ -10,9 +9,8 @@ export function BudgetPlanning() {
     <>
       <Header>
         <div className='ms-auto flex items-center space-x-4'>
-          <Search />
           <ThemeSwitch />
-          <ConfigDrawer />
+          <ProfileDropdown />
         </div>
       </Header>
 

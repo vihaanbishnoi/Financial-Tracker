@@ -85,3 +85,20 @@
     height: 0;
   }
 }
+
+/* Custom Sidebar Collapse Styles */
+[data-sidebar="sidebar"] {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+[data-sidebar="sidebar"].collapsed {
+  @apply w-16 overflow-hidden;
+}
+
+[data-sidebar="sidebar"].collapsed .sidebar-nav-item-title {
+  @apply hidden;
+}
+
+[data-sidebar="sidebar"].collapsed .sidebar-nav-group-title {
+  @apply hidden;
+}

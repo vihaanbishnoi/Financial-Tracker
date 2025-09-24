@@ -1,4 +1,3 @@
-import { useLayout } from '@/context/layout-provider'
 import {
   Sidebar,
   SidebarContent,
@@ -13,9 +12,13 @@ import { NavGroup } from './nav-group'
 // import { TeamSwitcher } from './team-switcher'
 
 export function AppSidebar() {
-  const { collapsible, variant } = useLayout()
   return (
-    <Sidebar collapsible={collapsible} variant={variant}>
+    <Sidebar 
+      collapsible="none"
+      variant="inset"
+      data-sidebar="sidebar"
+      className="transition-all duration-300"
+    >
       <SidebarHeader>
         {/* <TeamSwitcher teams={sidebarData.teams} /> */}
 

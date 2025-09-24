@@ -1,348 +1,160 @@
 import { useState } from 'react'
-import { Fragment } from 'react/jsx-runtime'
-import { format } from 'date-fns'
-import {
-  ArrowLeft,
-  MoreVertical,
-  Edit,
-  Paperclip,
-  Phone,
-  ImagePlus,
-  Plus,
-  Search as SearchIcon,
-  Send,
-  Video,
-  MessagesSquare,
-} from 'lucide-react'
+import { Bot, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-// import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { NewChat } from './components/new-chat'
-import { type ChatUser, type Convo } from './data/chat-types'
-// Fake Data
-import { conversations } from './data/convo.json'
+
+interface Message {
+  id: string
+  content: string
+  sender: 'user' | 'ai'
+  timestamp: Date
+}
 
 export function Chats() {
-  const [search, setSearch] = useState('')
-  const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null)
-  const [mobileSelectedUser, setMobileSelectedUser] = useState<ChatUser | null>(
-    null
-  )
-  const [createConversationDialogOpened, setCreateConversationDialog] =
-    useState(false)
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: 'Hello! I\'m your FinQuest AI assistant. How can I help you with your finances today?',
+      sender: 'ai',
+      timestamp: new Date()
+    }
+  ])
+  const [inputMessage, setInputMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Filtered data based on the search query
-  const filteredChatList = conversations.filter(({ fullName }) =>
-    fullName.toLowerCase().includes(search.trim().toLowerCase())
-  )
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputMessage.trim() || isLoading) return
 
-  const currentMessage = selectedUser?.messages.reduce(
-    (acc: Record<string, Convo[]>, obj) => {
-      const key = format(obj.timestamp, 'd MMM, yyyy')
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage.trim(),
+      sender: 'user',
+      timestamp: new Date()
+    }
 
-      // Create an array for the category if it doesn't exist
-      if (!acc[key]) {
-        acc[key] = []
+    setMessages(prev => [...prev, userMessage])
+    setInputMessage('')
+    setIsLoading(true)
+
+    // Simulate AI response
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `I understand you're asking about: "${userMessage.content}". As your financial AI assistant, I can help you with budgeting, transaction analysis, spending insights, and financial planning. What specific aspect would you like me to focus on?`,
+        sender: 'ai',
+        timestamp: new Date()
       }
-
-      // Push the current object to the array
-      acc[key].push(obj)
-
-      return acc
-    },
-    {}
-  )
-
-  const users = conversations.map(({ messages, ...user }) => user)
+      setMessages(prev => [...prev, aiMessage])
+      setIsLoading(false)
+    }, 1000)
+  }
 
   return (
     <>
-      {/* ===== Top Heading ===== */}
+      {/* ===== Top Header ===== */}
       <Header>
-        <Search />
         <div className='ms-auto flex items-center space-x-4'>
           <ThemeSwitch />
-          <ConfigDrawer />
-          {/* <ProfileDropdown /> */}
+          <ProfileDropdown />
         </div>
       </Header>
 
       <Main fixed>
-        <section className='flex h-full gap-6'>
-          {/* Left Side */}
-          <div className='flex w-full flex-col gap-2 sm:w-56 lg:w-72 2xl:w-80'>
-            <div className='bg-background sticky top-0 z-10 -mx-4 px-4 pb-3 shadow-md sm:static sm:z-auto sm:mx-0 sm:p-0 sm:shadow-none'>
-              <div className='flex items-center justify-between py-2'>
-                <div className='flex gap-2'>
-                  <h1 className='text-2xl font-bold'>Inbox</h1>
-                  <MessagesSquare size={20} />
-                </div>
-
-                <Button
-                  size='icon'
-                  variant='ghost'
-                  onClick={() => setCreateConversationDialog(true)}
-                  className='rounded-lg'
-                >
-                  <Edit size={24} className='stroke-muted-foreground' />
-                </Button>
-              </div>
-
-              <label
-                className={cn(
-                  'focus-within:ring-ring focus-within:ring-1 focus-within:outline-hidden',
-                  'border-border flex h-10 w-full items-center space-x-0 rounded-md border ps-2'
-                )}
-              >
-                <SearchIcon size={15} className='me-2 stroke-slate-500' />
-                <span className='sr-only'>Search</span>
-                <input
-                  type='text'
-                  className='w-full flex-1 bg-inherit text-sm focus-visible:outline-hidden'
-                  placeholder='Search chat...'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </label>
+        <div className="flex flex-col h-full">
+          {/* Chat Header */}
+          <div className="flex items-center gap-3 p-4 border-b">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary">
+              <Bot className="w-6 h-6 text-primary-foreground" />
             </div>
-
-            <ScrollArea className='-mx-3 h-full overflow-scroll p-3'>
-              {filteredChatList.map((chatUsr) => {
-                const { id, profile, username, messages, fullName } = chatUsr
-                const lastConvo = messages[0]
-                const lastMsg =
-                  lastConvo.sender === 'You'
-                    ? `You: ${lastConvo.message}`
-                    : lastConvo.message
-                return (
-                  <Fragment key={id}>
-                    <button
-                      type='button'
-                      className={cn(
-                        'group hover:bg-accent hover:text-accent-foreground',
-                        `flex w-full rounded-md px-2 py-2 text-start text-sm`,
-                        selectedUser?.id === id && 'sm:bg-muted'
-                      )}
-                      onClick={() => {
-                        setSelectedUser(chatUsr)
-                        setMobileSelectedUser(chatUsr)
-                      }}
-                    >
-                      <div className='flex gap-2'>
-                        <Avatar>
-                          <AvatarImage src={profile} alt={username} />
-                          <AvatarFallback>{username}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <span className='col-start-2 row-span-2 font-medium'>
-                            {fullName}
-                          </span>
-                          <span className='text-muted-foreground group-hover:text-accent-foreground/90 col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis'>
-                            {lastMsg}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                    <Separator className='my-1' />
-                  </Fragment>
-                )
-              })}
-            </ScrollArea>
+            <div>
+              <h1 className="text-xl font-semibold">FinQuest AI Assistant</h1>
+              <p className="text-sm text-muted-foreground">Your personal financial advisor</p>
+            </div>
           </div>
 
-          {/* Right Side */}
-          {selectedUser ? (
-            <div
-              className={cn(
-                'bg-background absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col border shadow-xs sm:static sm:z-auto sm:flex sm:rounded-md',
-                mobileSelectedUser && 'start-0 flex'
+          {/* Messages Area */}
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4 max-w-3xl mx-auto">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex w-full',
+                    message.sender === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'max-w-[70%] rounded-lg px-4 py-2 shadow-sm',
+                      message.sender === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    )}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className={cn(
+                      'text-xs mt-1',
+                      message.sender === 'user' 
+                        ? 'text-primary-foreground/70' 
+                        : 'text-muted-foreground'
+                    )}>
+                      {message.timestamp.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-muted rounded-lg px-4 py-2 shadow-sm">
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-pulse flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-xs text-muted-foreground">AI is thinking...</span>
+                    </div>
+                  </div>
+                </div>
               )}
-            >
-              {/* Top Part */}
-              <div className='bg-card mb-1 flex flex-none justify-between p-4 shadow-lg sm:rounded-t-md'>
-                {/* Left */}
-                <div className='flex gap-3'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='-ms-2 h-full sm:hidden'
-                    onClick={() => setMobileSelectedUser(null)}
-                  >
-                    <ArrowLeft className='rtl:rotate-180' />
-                  </Button>
-                  <div className='flex items-center gap-2 lg:gap-4'>
-                    <Avatar className='size-9 lg:size-11'>
-                      <AvatarImage
-                        src={selectedUser.profile}
-                        alt={selectedUser.username}
-                      />
-                      <AvatarFallback>{selectedUser.username}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-                        {selectedUser.fullName}
-                      </span>
-                      <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm'>
-                        {selectedUser.title}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right */}
-                <div className='-me-1 flex items-center gap-1 lg:gap-2'>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-                  >
-                    <Video size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='hidden size-8 rounded-full sm:inline-flex lg:size-10'
-                  >
-                    <Phone size={22} className='stroke-muted-foreground' />
-                  </Button>
-                  <Button
-                    size='icon'
-                    variant='ghost'
-                    className='h-10 rounded-md sm:h-8 sm:w-4 lg:h-10 lg:w-6'
-                  >
-                    <MoreVertical className='stroke-muted-foreground sm:size-5' />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Conversation */}
-              <div className='flex flex-1 flex-col gap-2 rounded-md px-4 pt-0 pb-4'>
-                <div className='flex size-full flex-1'>
-                  <div className='chat-text-container relative -me-4 flex flex-1 flex-col overflow-y-hidden'>
-                    <div className='chat-flex flex h-40 w-full grow flex-col-reverse justify-start gap-4 overflow-y-auto py-2 pe-4 pb-4'>
-                      {currentMessage &&
-                        Object.keys(currentMessage).map((key) => (
-                          <Fragment key={key}>
-                            {currentMessage[key].map((msg, index) => (
-                              <div
-                                key={`${msg.sender}-${msg.timestamp}-${index}`}
-                                className={cn(
-                                  'chat-box max-w-72 px-3 py-2 break-words shadow-lg',
-                                  msg.sender === 'You'
-                                    ? 'bg-primary/90 text-primary-foreground/75 self-end rounded-[16px_16px_0_16px]'
-                                    : 'bg-muted self-start rounded-[16px_16px_16px_0]'
-                                )}
-                              >
-                                {msg.message}{' '}
-                                <span
-                                  className={cn(
-                                    'text-foreground/75 mt-1 block text-xs font-light italic',
-                                    msg.sender === 'You' &&
-                                      'text-primary-foreground/85 text-end'
-                                  )}
-                                >
-                                  {format(msg.timestamp, 'h:mm a')}
-                                </span>
-                              </div>
-                            ))}
-                            <div className='text-center text-xs'>{key}</div>
-                          </Fragment>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-                <form className='flex w-full flex-none gap-2'>
-                  <div className='border-input bg-card focus-within:ring-ring flex flex-1 items-center gap-2 rounded-md border px-2 py-1 focus-within:ring-1 focus-within:outline-hidden lg:gap-4'>
-                    <div className='space-x-1'>
-                      <Button
-                        size='icon'
-                        type='button'
-                        variant='ghost'
-                        className='h-8 rounded-md'
-                      >
-                        <Plus size={20} className='stroke-muted-foreground' />
-                      </Button>
-                      <Button
-                        size='icon'
-                        type='button'
-                        variant='ghost'
-                        className='hidden h-8 rounded-md lg:inline-flex'
-                      >
-                        <ImagePlus
-                          size={20}
-                          className='stroke-muted-foreground'
-                        />
-                      </Button>
-                      <Button
-                        size='icon'
-                        type='button'
-                        variant='ghost'
-                        className='hidden h-8 rounded-md lg:inline-flex'
-                      >
-                        <Paperclip
-                          size={20}
-                          className='stroke-muted-foreground'
-                        />
-                      </Button>
-                    </div>
-                    <label className='flex-1'>
-                      <span className='sr-only'>Chat Text Box</span>
-                      <input
-                        type='text'
-                        placeholder='Type your messages...'
-                        className='h-8 w-full bg-inherit focus-visible:outline-hidden'
-                      />
-                    </label>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className='hidden sm:inline-flex'
-                    >
-                      <Send size={20} />
-                    </Button>
-                  </div>
-                  <Button className='h-full sm:hidden'>
-                    <Send size={18} /> Send
-                  </Button>
-                </form>
-              </div>
             </div>
-          ) : (
-            <div
-              className={cn(
-                'bg-card absolute inset-0 start-full z-50 hidden w-full flex-1 flex-col justify-center rounded-md border shadow-xs sm:static sm:z-auto sm:flex'
-              )}
-            >
-              <div className='flex flex-col items-center space-y-6'>
-                <div className='border-border flex size-16 items-center justify-center rounded-full border-2'>
-                  <MessagesSquare className='size-8' />
+          </ScrollArea>
+
+          {/* Input Area */}
+          <div className="p-4 border-t">
+            <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto">
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center gap-2 rounded-md border px-3 py-2 focus-within:ring-1 focus-within:ring-ring">
+                  <input
+                    type="text"
+                    placeholder="Ask me anything about your finances..."
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    className="flex-1 bg-transparent focus:outline-none"
+                    disabled={isLoading}
+                  />
                 </div>
-                <div className='space-y-2 text-center'>
-                  <h1 className='text-xl font-semibold'>Your messages</h1>
-                  <p className='text-muted-foreground text-sm'>
-                    Send a message to start a chat.
-                  </p>
-                </div>
-                <Button onClick={() => setCreateConversationDialog(true)}>
-                  Send message
+                <Button 
+                  type="submit" 
+                  disabled={!inputMessage.trim() || isLoading}
+                  className="px-4"
+                >
+                  <Send className="w-4 h-4" />
                 </Button>
               </div>
-            </div>
-          )}
-        </section>
-        <NewChat
-          users={users}
-          onOpenChange={setCreateConversationDialog}
-          open={createConversationDialogOpened}
-        />
+            </form>
+          </div>
+        </div>
       </Main>
     </>
   )
