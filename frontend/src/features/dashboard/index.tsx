@@ -1,7 +1,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -13,6 +12,8 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { Overview } from './components/overview'
 import { RecentSales } from './components/recent-sales'
 import { BudgetProgress } from './components/budget-progress'
+import GradientText from '@/components/gradient-text'
+
 
 export function Dashboard() {
   return (
@@ -27,8 +28,10 @@ export function Dashboard() {
 
       {/* ===== Main ===== */}
       <Main>
-        <div className='mb-2 flex items-center justify-between space-y-2'>
-          <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+        <div className='mb-6 flex items-center justify-center'>
+          <GradientText className='text-4xl font-bold'>
+            Welcome User
+          </GradientText>
         </div>
         <Tabs
           orientation='vertical'
@@ -54,9 +57,6 @@ export function Dashboard() {
               <Card className='col-span-1 lg:col-span-3'>
                 <CardHeader>
                   <CardTitle>Recent Transactions</CardTitle>
-                  <CardDescription>
-                    You have spent x amount of money this month.
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentSales />
